@@ -1,3 +1,4 @@
+import Foundation
 import CalculatorEngine
 
 var calc = Calculator()
@@ -37,7 +38,6 @@ print("=== CalculatorEngine Test Suite ===\n")
 
 for (expr, expected, desc) in tests {
     let result = calc.evaluate(expr)
-    // For numeric results, compare with tolerance
     if result.hasPrefix("Error:") {
         if expected.hasPrefix("Error:") {
             passed += 1
@@ -83,4 +83,3 @@ for (expr, expectedErr) in errorTests {
 }
 
 print("\n=== \(passed)/\(passed+failed) tests passed ===")
-exit(failed > 0 ? 0 : 0) // Always exit 0 for test runner
