@@ -9,13 +9,19 @@ let package = Package(
     ],
     products: [
         .executable(name: "CalculatorApp", targets: ["CalculatorApp"]),
-        .library(name: "CalculatorEngine", targets: ["CalculatorEngine"])
+        .library(name: "CalculatorEngine", targets: ["CalculatorEngine"]),
+        .executable(name: "CalculatorCLI", targets: ["CalculatorCLI"])
     ],
     dependencies: [],
     targets: [
         .target(
             name: "CalculatorEngine",
             path: "Sources/CalculatorEngine"
+        ),
+        .executableTarget(
+            name: "CalculatorCLI",
+            dependencies: ["CalculatorEngine"],
+            path: "Sources/CalculatorCLI"
         ),
         .executableTarget(
             name: "CalculatorApp",
