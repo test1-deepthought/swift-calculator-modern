@@ -64,7 +64,6 @@ final class CalculatorViewModel: ObservableObject {
         } else if currentInput == "0" && digit != "0" {
             currentInput = digit
         } else if currentInput == "0" && digit == "0" {
-            // keep "0"
             return
         } else {
             currentInput += digit
@@ -90,7 +89,6 @@ final class CalculatorViewModel: ObservableObject {
             currentInput = lastResult
             isShowingResult = false
         }
-        // Replace trailing operator
         if let last = currentInput.last, "+-*/%^".contains(last) {
             currentInput.removeLast()
         }
@@ -104,7 +102,6 @@ final class CalculatorViewModel: ObservableObject {
             currentInput = lastResult
             isShowingResult = false
         }
-        // Append function with open paren
         currentInput += "\(fn)("
         expressionText = currentInput
         displayText = currentInput
@@ -140,7 +137,6 @@ final class CalculatorViewModel: ObservableObject {
 
     private func handleDelete() {
         guard !currentInput.isEmpty else { return }
-        // Delete trailing function + paren as a unit
         let funcPatterns = ["sqrt(", "sin(", "cos(", "tan(", "log(", "ln(", "abs(", "exp(", "asin(", "acos(", "atan("]
         for fp in funcPatterns {
             if currentInput.hasSuffix(fp) {
@@ -179,7 +175,7 @@ final class CalculatorViewModel: ObservableObject {
         memoryValue = nil
     }
 
-    private func handleGraph() {
+    func handleGraph() {
         graphExpression = lastResult
         showGraph = true
     }
