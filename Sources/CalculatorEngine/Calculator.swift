@@ -95,8 +95,8 @@ struct Tokenizer {
         var tokens: [Token] = []
         var expectInfix = false  // tracks whether we expect a binary op or a value
 
-        while let c = peek() {
-            skipWhitespace()
+        skipWhitespace()
+        while !isAtEnd {
             guard let c = peek() else { break }
 
             if c.isNumber || c == "." {
@@ -112,7 +112,6 @@ struct Tokenizer {
                     tokens.append(.constant("e"))
                 case "sqrt", "sin", "cos", "tan", "log", "ln", "abs", "exp", "asin", "acos", "atan":
                     tokens.append(.function(word.lowercased()))
-                    // function token is a prefix — don't set expectInfix yet
                 default:
                     throw CalculatorError.unknownFunction(word)
                 }
@@ -121,7 +120,6 @@ struct Tokenizer {
                 switch c {
                 case "+":
                     if !expectInfix {
-                        // unary plus — just skip it
                         _ = advance()
                         continue
                     }
@@ -130,7 +128,6 @@ struct Tokenizer {
                     expectInfix = false
                 case "-":
                     if !expectInfix {
-                        // unary minus — insert -1 * ...
                         _ = advance()
                         tokens.append(.number(-1))
                         tokens.append(.multiply)
@@ -171,6 +168,7 @@ struct Tokenizer {
                     throw CalculatorError.invalidExpression("Unexpected character: '\(c)'")
                 }
             }
+            skipWhitespace()
         }
         return tokens
     }
@@ -219,7 +217,7 @@ public struct Calculator {
             self.tokens = toks
             self.position = 0
 
-            guard !tokens.isEmpty else { return "0" }
+            guard !toks.isEmpty else { return "0" }
 
             let result = try parseExpression()
             guard position >= tokens.count else {
@@ -253,7 +251,7 @@ public struct Calculator {
         return left
     }
 
-    // MARK: - Term parser (handles *, /, %, and implicit multiplication after constants)
+    // MARK: - Term parser (handles *, /, %)
 
     private mutating func parseTerm() throws -> Double {
         var left = try parseFactor()
@@ -283,7 +281,7 @@ public struct Calculator {
     // MARK: - Factor parser (handles ^ and !)
 
     private mutating func parseFactor() throws -> Double {
-        var base = try parseExponential()
+        var base = try parsePrimary()
         while position < tokens.count {
             let tok = tokens[position]
             switch tok {
@@ -304,13 +302,7 @@ public struct Calculator {
         return base
     }
 
-    // MARK: - Exponential (handles implicit "^" for scientific notation like 2e5)
-
-    private mutating func parseExponential() throws -> Double {
-        return try parsePrimary()
-    }
-
-    // MARK: - Primary parser (numbers, parens, functions, constants, unary minus)
+    // MARK: - Primary parser (numbers, parens, functions, constants)
 
     private mutating func parsePrimary() throws -> Double {
         guard position < tokens.count else {
@@ -332,7 +324,6 @@ public struct Calculator {
 
         case .function(let name):
             position += 1
-            // Expect '(' value ')'
             guard position < tokens.count, tokens[position] == .leftParen else {
                 throw CalculatorError.invalidExpression("Expected '(' after function '\(name)'")
             }
@@ -392,11 +383,9 @@ private func factorial(_ n: Int) -> Double {
 private func formatResult(_ value: Double) -> String {
     if value.isNaN { return "NaN" }
     if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
-    // If it's a whole number, show without decimal
     if value == floor(value) && value.isFinite && abs(value) < 1e15 {
         return String(format: "%.0f", value)
     }
-    // Trim trailing zeros
     let s = String(format: "%.12g", value)
     return s
 }
